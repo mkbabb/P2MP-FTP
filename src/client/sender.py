@@ -14,14 +14,14 @@ def timed_join_all(threads: list[threading.Thread], timeout: int) -> None:
     start = curr_time = time.time()
     end = start + timeout
     while curr_time <= end:
+        if all((not t.is_alive()) for t in threads):
+            return
+
         for t in threads:
             if not t.is_alive():
                 t.join()
 
-        if all((not t.is_alive()) for t in threads):
-            return
-
-        time.sleep(0.1)
+        time.sleep(1)
         curr_time = time.time()
 
 
