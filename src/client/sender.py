@@ -1,12 +1,13 @@
 import argparse
 import pathlib
+import sys
 import threading
 import socket
 import time
 
 from src.utils.utils import recv_message, send_message
 
-ARQ_TIME = 100
+ARQ_TIME = 10
 
 
 def timed_join_all(threads: list[threading.Thread], timeout: int) -> None:
@@ -16,6 +17,10 @@ def timed_join_all(threads: list[threading.Thread], timeout: int) -> None:
         for t in threads:
             if not t.is_alive():
                 t.join()
+
+        if all((not t.is_alive()) for t in threads):
+            return
+
         time.sleep(0.1)
         curr_time = time.time()
 
@@ -37,6 +42,8 @@ def stop_n_wait_send(
             seq_nums[n] = ack.seq_num
 
             acks.add(n)
+
+            sys.exit()
 
         threads = []
         for n in socket_ixs:

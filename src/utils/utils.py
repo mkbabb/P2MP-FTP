@@ -56,6 +56,10 @@ def recv_message(
     chunk_size: int = CHUNK_SIZE,
 ) -> Optional[Packet]:
     header = peer_socket.recv(UDP_HEADER_SIZE)
+
+    if len(header) == 0:
+        return None
+
     seq_num, datasum, dtype, data_len = struct.unpack(UDP_HEADER_FMT, header)
 
     data = b""
