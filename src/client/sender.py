@@ -1,9 +1,9 @@
 import argparse
+import multiprocessing as mp
 import pathlib
 import socket
 import time
-import multiprocessing as mp
-from multiprocessing.pool import AsyncResult, ApplyResult, Pool
+from multiprocessing.pool import AsyncResult, Pool
 
 from src.utils.utils import recv_message, send_message
 
