@@ -27,7 +27,7 @@ def send_recv(n: int, sock: socket.socket, data: bytes, seq_nums: list[int]) -> 
 
 
 def stop_n_wait_send(
-    pool: Pool, sockets: list[socket.socket], data: bytes, seq_nums: list[int]
+    sockets: list[socket.socket], data: bytes, seq_nums: list[int]
 ) -> None:
     ixs = set(range(len(sockets)))
     acks: set[int] = set()
@@ -38,13 +38,15 @@ def stop_n_wait_send(
         acks.add(n)
 
     def inner(socket_ixs: set[int]) -> None:
-        processes = [
-            pool.apply_async(
-                send_recv, args=(n, sockets[n], data, seq_nums), callback=callback
-            )
-            for n in socket_ixs
-        ]
-        timed_join_all(processes, ARQ_TIME)
+        with Pool(len(sockets)) as pool:
+            processes: list[AsyncResult] = [
+                pool.apply_async(
+                    send_recv, args=(n, sockets[n], data, seq_nums), callback=callback
+                )
+                for n in socket_ixs
+            ]
+            timed_join_all(processes, ARQ_TIME)
+            pool.terminate()
 
     while len(socket_ixs := ixs.difference(acks)) != 0:
         inner(socket_ixs)
@@ -55,19 +57,18 @@ def sender(servers: list[str], port: int, filename: str, mss: int) -> None:
     seq_nums = [0] * len(servers)
 
     for n, hostname in enumerate(servers):
-        sockets.append(socket.create_connection((hostname, port + n)))
+        sockets.append(socket.create_connection((hostname, port)))
 
     filepath = pathlib.Path(filename)
 
-    with Pool(len(sockets)) as pool:
-        with filepath.open("rb") as file:
-            while data := file.read(mss):
-                stop_n_wait_send(pool, sockets, data, seq_nums)
+    with filepath.open("rb") as file:
+        while data := file.read(mss):
+            stop_n_wait_send(sockets, data, seq_nums)
 
-        stop_n_wait_send(pool, sockets, b"", seq_nums)
+    stop_n_wait_send(sockets, b"", seq_nums)
 
-        for sock in sockets:
-            sock.close()
+    for sock in sockets:
+        sock.close()
 
 
 def main() -> None:

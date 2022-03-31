@@ -21,7 +21,7 @@ def server_receiver(peer_socket: socket.socket, filename: str, p: float) -> None
             r = random.random()
 
             if packet is not None and r > p:
-                print(f"packet hit! {n}")
+                print(f"packet hit! {n}, {r}")
                 seq_num = packet.seq_num + 1
                 send_message(b"", peer_socket, seq_num)
 
@@ -59,6 +59,7 @@ def server(port: int, filename: str, p: float) -> None:
 def main() -> None:
     def probability_type(s: str) -> Optional[float]:
         x = float(s)
+        print(x)
         if not (0 < x <= 1):
             raise argparse.ArgumentTypeError("p value must be between 0 and 1")
         return x
@@ -79,7 +80,7 @@ def main() -> None:
 
     port = int(args.port)
     filename = args.filename
-    p = int(args.p)
+    p = float(args.p)
 
     server(port, filename, p)
 
