@@ -38,7 +38,7 @@ def stop_n_wait_send(
         acks.add(n)
 
     def inner(socket_ixs: set[int]) -> None:
-        with Pool(len(sockets)) as pool:
+        with Pool(len(socket_ixs)) as pool:
             processes: list[AsyncResult] = [
                 pool.apply_async(
                     send_recv, args=(n, sockets[n], data, seq_nums), callback=callback
