@@ -1,8 +1,8 @@
 import socket
 import struct
+from dataclasses import dataclass
 from enum import Enum
 from typing import *
-from dataclasses import dataclass
 
 PORT = 7735
 
@@ -38,11 +38,12 @@ def carry_add(a: int, b: int) -> int:
 
 
 def calc_checksum(data: bytes, invert: bool = True) -> int:
-    if len(data) % 2 != 0:
+    if len(data) % 2 != 0:  # pad the data to a mult. of 2.
         data += struct.pack("!B", 0)
 
     checksum = 0
     for i in range(0, len(data), 2):
+        # add chunks of 2 bytes
         checksum = carry_add(data[i] << 8, data[i + 1])
 
     if invert:
@@ -56,9 +57,6 @@ def recv_message(
     chunk_size: int = CHUNK_SIZE,
 ) -> Optional[Packet]:
     header = peer_socket.recv(UDP_HEADER_SIZE)
-
-    if len(header) == 0:
-        return None
 
     seq_num, datasum, dtype, data_len = struct.unpack(UDP_HEADER_FMT, header)
 

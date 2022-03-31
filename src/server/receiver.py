@@ -2,6 +2,7 @@ import argparse
 import pathlib
 import random
 import socket
+import sys
 import threading
 from typing import Optional
 
@@ -12,11 +13,13 @@ def server_receiver(peer_socket: socket.socket, filename: str, p: float) -> None
     filepath = pathlib.Path(filename)
 
     with filepath.open("wb") as file:
+        n = 0
         while True:
             packet = recv_message(peer_socket)
             r = random.random()
 
-            if packet is not None:
+            if packet is not None and r > p:
+                print(f"packet hit! {n}")
                 seq_num = packet.seq_num + 1
                 send_message(b"", peer_socket, seq_num)
 
@@ -24,6 +27,11 @@ def server_receiver(peer_socket: socket.socket, filename: str, p: float) -> None
                     break
                 else:
                     file.write(packet.data)
+            else:
+                print(f"packet missed! r value was {r}")
+
+            n += 1
+    sys.exit()
 
 
 def server(port: int, filename: str, p: float) -> None:
@@ -55,9 +63,15 @@ def main() -> None:
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("port", type=int)
-    parser.add_argument("filename", type=str)
-    parser.add_argument("p", type=probability_type)
+    parser.add_argument("port", type=int, help="port number to spawn the server on")
+    parser.add_argument(
+        "filename", type=str, help="filename to save the downloaded file to"
+    )
+    parser.add_argument(
+        "p",
+        type=probability_type,
+        help="probability value, between 0 and 1, to simulate a packet loss",
+    )
 
     args = parser.parse_args()
 
