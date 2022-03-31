@@ -16,7 +16,7 @@ def timed_join_all(processes: list[AsyncResult], timeout: int) -> None:
     while curr_time <= end:
         if all((p.ready()) for p in processes):
             return
-        time.sleep(0.5)
+        time.sleep(0.01)
         curr_time = time.time()
 
 
@@ -54,8 +54,8 @@ def sender(servers: list[str], port: int, filename: str, mss: int) -> None:
     sockets: list[socket.socket] = []
     seq_nums = [0] * len(servers)
 
-    for hostname in servers:
-        sockets.append(socket.create_connection((hostname, port)))
+    for n, hostname in enumerate(servers):
+        sockets.append(socket.create_connection((hostname, port + n)))
 
     filepath = pathlib.Path(filename)
 

@@ -46,3 +46,33 @@ notifying the client that the data has been consumed successfully.
     port        port number to spawn the server on
     filename    filename to save the downloaded file to
     p           probability value, between 0 and 1, to simulate a packet loss
+
+## Tasks
+
+For each task, the file used for transfer was [`beatrice.jpg`](data/beatrice.jpg).
+
+## Task 1
+
+For the first task, an `mss` value of 500 (bytes) was used, in conjunction with with a
+maximum of 5 receiver servers. As this implementation is written in Python, we found the
+GIL (global interpreter lock) to be a large confounding factor in terms of parallelized
+performance: with each added server, we found a slowdown of roughly 10x for the first
+server, 5x for the second, tapering off to 2x with 5.
+
+## Task 2
+
+For the second task, we used 3 servers in totality, with a variable `mss` value ranging
+from 100 to 1000 (divided into increments of 100). We found that there was a linear
+relationship between the `mss` value and time between packet transfers. **As the `mss`
+value increased, the time between packet transfers also increased, though marginally
+so.** This was expected.
+
+## Task 3
+
+For the third and final task, we used, we used 3 servers in totality, with a variable
+`p` value ranging from 0.01 to 0.1 (divided into increments of 0.01). We, too, found
+that there was a linear relationship between the increased `p` value: **As the `p` value
+increased, the time between packet transfers also increased.** This is to be expected,
+as when we increase the frequency of packet loss, the time take to transfer will
+increase - this is also conjointly related to the `ARQ_TIME` value, which determines the
+timeout interval.

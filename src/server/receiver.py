@@ -12,6 +12,8 @@ from src.utils.utils import recv_message, send_message
 def server_receiver(peer_socket: socket.socket, filename: str, p: float) -> None:
     filepath = pathlib.Path(filename)
 
+    print("server init!")
+
     with filepath.open("wb") as file:
         n = 0
         while True:
