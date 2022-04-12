@@ -60,7 +60,7 @@ def sender(servers: list[str], port: int, filename: str, mss: int) -> None:
     seq_nums = [0] * len(servers)
 
     for n, hostname in enumerate(servers):
-        sockets.append(socket.create_connection((hostname, port)))
+        sockets.append(socket.create_connection((hostname, port + n)))
 
     filepath = pathlib.Path(filename)
 
